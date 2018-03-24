@@ -20,5 +20,13 @@
         android:background="@android:drawable/ic_menu_close_clear_cancel"
         android:padding="20dp"/>
 
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imgTakePicture"
+        android:layout_gravity="bottom|center"
+        android:background="@drawable/ic_photo_camera_black"
+        android:padding="40dp"/>
+
 </FrameLayout>
 
