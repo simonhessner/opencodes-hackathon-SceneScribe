@@ -1,33 +1,48 @@
 package de.zkm.opencodes.hackathon.scenescribe;
 
 import android.app.Activity;
+import android.hardware.Camera;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.ImageButton;
 
 public class MainActivity extends Activity  {
     public TTSService tts;
-
+    private Camera mCamera = null;
+    private CameraPreview mCameraView = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        findViewById(R.id.textView).setOnClickListener(new View.OnClickListener() {
+        try{
+            mCamera = Camera.open(0);//you can use open(int) to use different cameras
+        } catch (Exception e){
+            Log.d("ERROR", "Failed to get camera: " + e.getMessage());
+        }
+
+        if(mCamera != null) {
+            mCameraView = new CameraPreview(this, mCamera);//create a SurfaceView to show camera data
+            FrameLayout camera_view = (FrameLayout)findViewById(R.id.camera_preview);
+            camera_view.addView(mCameraView);//add the SurfaceView to the layout
+        }
+
+        //btn to close the application
+        ImageButton imgClose = (ImageButton)findViewById(R.id.imgClose);
+        imgClose.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                System.out.println("test");
-                tts.speak("Hi");
+            public void onClick(View view) {
+                System.exit(0);
             }
         });
-
-        this.tts = new TTSService(this);
     }
 
     @Override
     public void onDestroy() {
-        this.tts.shutdown();
         super.onDestroy();
     }
 
