@@ -1,6 +1,7 @@
 package de.zkm.opencodes.hackathon.scenescribe;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.hardware.Camera;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -31,6 +32,20 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
         try{
+            Camera.Parameters parameters = mCamera.getParameters();
+            if (this.getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE) {
+                parameters.set("orientation", "portrait");
+                mCamera.setDisplayOrientation(90);
+                parameters.setRotation(90);
+            }
+            else {
+                // This is an undocumented although widely known feature
+                parameters.set("orientation", "landscape");
+                // For Android 2.2 and above
+                mCamera.setDisplayOrientation(0);
+                // Uncomment for Android 2.0 and above
+                parameters.setRotation(0);
+            }
             //when the surface is created, we can set the camera to draw images in this surfaceholder
             mCamera.setPreviewDisplay(surfaceHolder);
             mCamera.startPreview();
@@ -52,6 +67,22 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
         //now, recreate the camera preview
         try{
+            Camera.Parameters parameters = mCamera.getParameters();
+            if (this.getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE) {
+                parameters.set("orientation", "portrait");
+                mCamera.setDisplayOrientation(90);
+                parameters.setRotation(90);
+                mCamera.setPreviewDisplay(surfaceHolder);
+                mCamera.startPreview();
+            }
+            else {
+                // This is an undocumented although widely known feature
+                parameters.set("orientation", "landscape");
+                // For Android 2.2 and above
+                mCamera.setDisplayOrientation(0);
+                // Uncomment for Android 2.0 and above
+                parameters.setRotation(0);
+            }
             mCamera.setPreviewDisplay(mHolder);
             mCamera.startPreview();
         } catch (IOException e) {
