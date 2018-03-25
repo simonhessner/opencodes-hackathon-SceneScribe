@@ -1,14 +1,7 @@
 package de.zkm.opencodes.hackathon.scenescribe;
 
-
-import android.content.res.Resources;
-import android.support.v4.content.res.ResourcesCompat;
-
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -25,22 +18,32 @@ public class APIConnector {
     OkHttpClient client = new OkHttpClient();
 
     public APIConnector() {
-        File file = new File(ResourcesCompat.getDrawable(Resources.getSystem(), R.drawable.ic_launcher_background, null).);
-        try {
-            this.upload("http://localhost:5000", file);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
     }
 
-    public void upload(String url, File file) throws IOException {
-        RequestBody formBody = new MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("file", file.getName(),
-                        RequestBody.create(MediaType.parse("text/plain"), file))
-                .addFormDataPart("other_field", "other_field_value")
-                .build();
-        Request request = new Request.Builder().url(url).post(formBody).build();
-        Response response = this.client.newCall(request).execute();
+    public void upload(final String url, final File file) throws IOException {
+        Thread thread = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                try  {
+                    RequestBody formBody = new MultipartBody.Builder()
+                            .setType(MultipartBody.FORM)
+                            .addFormDataPart("image", file.getName(),
+                                    RequestBody.create(MediaType.parse("text/plain"), file))
+                            .build();
+                    Request request = new Request.Builder().url(url).post(formBody).build();
+                    Response response = client.newCall(request).execute();
+
+                    System.out.println(response.body().toString());
+                    System.out.println("test");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        thread.start();
+
     }
 }

@@ -23,6 +23,8 @@ public class MainActivity extends Activity  {
     private Camera mCamera = null;
     private CameraPreview mCameraView = null;
 
+    private APIConnector api = new APIConnector();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -96,9 +98,12 @@ public class MainActivity extends Activity  {
                 FileOutputStream fos = new FileOutputStream(pictureFile);
                 fos.write(data);
                 fos.close();
+                System.out.println("test!!!!");
+                api.upload("http://13.93.105.66:9999/image", pictureFile);
             } catch (FileNotFoundException e) {
-
+                e.printStackTrace();
             } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     };
