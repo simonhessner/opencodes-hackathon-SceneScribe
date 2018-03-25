@@ -20,9 +20,6 @@ interface OnResponseCallback {
     void receiveText(String text);
 }
 
-// TODOs:
-// 1. Resize image direclty in app
-
 public class MainActivity extends Activity  {
     public TTSService tts;
     private Camera mCamera = null;

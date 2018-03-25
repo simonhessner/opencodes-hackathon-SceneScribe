@@ -8,6 +8,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Created by Jonas_000 on 24.03.2018.
@@ -31,6 +32,11 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
         // The Surface has been created, acquire the camera and tell it where
         // to draw.
         mCamera = Camera.open();
+
+        /*Camera.Parameters parameters = mCamera.getParameters();
+        parameters.setPictureSize(128,128);
+        mCamera.setParameters(parameters);
+        */
         try {
             mCamera.setPreviewDisplay(holder);
         } catch (IOException exception) {
@@ -50,6 +56,17 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
 
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
         Camera.Parameters parameters = mCamera.getParameters();
+
+        List<Camera.Size> sizes = parameters.getSupportedPictureSizes();
+        Camera.Size size = sizes.get(0);
+        for (int i = 0; i < sizes.size(); i++) {
+            if (sizes.get(i).width < size.width && (sizes.get(i).width >= 512 || sizes.get(i).height >= 512)) {
+                size = sizes.get(i);
+            }
+        }
+
+        parameters.setPictureSize(size.width, size.height);
+        System.out.println("Using " + size.width + "x" + size.height);
 
         if (this.getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE) {
             parameters.set("orientation", "portrait");
