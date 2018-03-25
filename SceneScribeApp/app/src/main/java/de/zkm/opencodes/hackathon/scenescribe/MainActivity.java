@@ -10,6 +10,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -41,6 +42,11 @@ public class MainActivity extends Activity  {
             FrameLayout camera_view = (FrameLayout)findViewById(R.id.camera_preview);
             camera_view.addView(mCameraView);//add the SurfaceView to the layout
         }
+
+        //Set Description Test
+        //TODO: use this code snippet to show Description of the Scenary
+        TextView description = (TextView) findViewById(R.id.text_description);
+        description.setText("This is a description of the sceneray!");
 
         //btn to close the application
         ImageButton imgClose = (ImageButton)findViewById(R.id.imgClose);
