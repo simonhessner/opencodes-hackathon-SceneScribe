@@ -29,11 +29,8 @@ interface OnResponseCallback {
 }
 
 // TODOs:
-// 1. Nicer voice
-// 2. Fix problem that every picture gets resized to square (look in paper which aspect ratio is expected)
-// 3. trigger by speech input
-
-
+// 1. Fix problem that every picture gets resized to square (look in paper which aspect ratio is expected)
+// 2. trigger by speech input
 
 public class MainActivity extends Activity  {
     public TTSService tts;
@@ -87,46 +84,44 @@ public class MainActivity extends Activity  {
         mPreview.mCamera.takePicture(null, null, new Camera.PictureCallback() {
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
-                Bitmap orig = BitmapFactory.decodeByteArray(data,0,data.length);
+            Bitmap orig = BitmapFactory.decodeByteArray(data,0,data.length);
 
-                Bitmap rescaled = Bitmap.createScaledBitmap(orig, 512, 512, true); // Width and Height in pixel e.g. 50
+            /*
+            Bitmap rescaled = Bitmap.createScaledBitmap(orig, 512, 512, true); // Width and Height in pixel e.g. 50
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            rescaled.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            data = stream.toByteArray();
+            */
 
-                ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                rescaled.compress(Bitmap.CompressFormat.PNG, 100, stream);
-                data = stream.toByteArray();
+            File pictureFile = getOutputMediaFile();
+            if (pictureFile == null) {
+                return;
+            }
+            try {
+                FileOutputStream fos = new FileOutputStream(pictureFile);
+                fos.write(data);
+                fos.close();
+                api.upload("http://13.93.105.66:9999/image", pictureFile, new OnResponseCallback() {
+                    @Override
+                    public void receiveText(final String text) {
+                        tts.speak(text);
+                        mPreview.mCamera.startPreview();
 
-
-                File pictureFile = getOutputMediaFile();
-                if (pictureFile == null) {
-                    return;
-                }
-                try {
-                    FileOutputStream fos = new FileOutputStream(pictureFile);
-                    fos.write(data);
-                    fos.close();
-                    api.upload("http://13.93.105.66:9999/image", pictureFile, new OnResponseCallback() {
-                        @Override
-                        public void receiveText(final String text) {
-                            tts.speak(text);
-                            mPreview.mCamera.startPreview();
-
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    ((TextView)findViewById(R.id.text_description)).setText(text);
-                                    ((ImageButton)findViewById(R.id.imgTakePicture)).setEnabled(true);
-                                    ((FrameLayout)findViewById(R.id.camera_preview)).setEnabled(true);
-                                }
-                            });
-                        }
-                    });
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                ((TextView)findViewById(R.id.text_description)).setText(text);
+                                ((ImageButton)findViewById(R.id.imgTakePicture)).setEnabled(true);
+                                ((FrameLayout)findViewById(R.id.camera_preview)).setEnabled(true);
+                            }
+                        });
+                    }
+                });
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             }
         });
     }
