@@ -1,18 +1,18 @@
 package de.zkm.opencodes.hackathon.scenescribe;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.Vibrator;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -29,36 +29,36 @@ interface OnResponseCallback {
 }
 
 // TODOs:
-// 1. Request permissions on first app start
-// 2. Nicer voice
-// 3. Fix problem that every picture gets resized to square (look in paper which aspect ratio is expected)
+// 1. Nicer voice
+// 2. Fix problem that every picture gets resized to square (look in paper which aspect ratio is expected)
+// 3. trigger by speech input
+
+
 
 public class MainActivity extends Activity  {
     public TTSService tts;
     private Camera mCamera = null;
-    private CameraPreview mCameraView = null;
-
     private APIConnector api = new APIConnector();
+    private CameraPreview mPreview;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        this.requestPermissions();
+
         this.tts = new TTSService(this);
 
-        try{
-            mCamera = Camera.open(0);//you can use open(int) to use different cameras
-        } catch (Exception e){
-            Log.d("ERROR", "Failed to get camera: " + e.getMessage());
-        }
+        mPreview = new CameraPreview(this);
+        ((FrameLayout)findViewById(R.id.camera_preview)).addView(mPreview);
+        mPreview.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendPhoto();
+            }
+        });
 
-        if(mCamera != null) {
-            mCameraView = new CameraPreview(this, mCamera);//create a SurfaceView to show camera data
-            FrameLayout camera_view = (FrameLayout)findViewById(R.id.camera_preview);
-            camera_view.addView(mCameraView);//add the SurfaceView to the layout
-            mCamera.startPreview();
-        }
 
         //btn to close the application
         ImageButton imgClose = (ImageButton)findViewById(R.id.imgClose);
@@ -74,13 +74,98 @@ public class MainActivity extends Activity  {
         imgTakePicture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ((TextView)findViewById(R.id.text_description)).setText("Please wait...");
-                ((Vibrator) getSystemService(Context.VIBRATOR_SERVICE)).vibrate(100);
-                mCamera.takePicture(null, null, mPicture);
-                ((ImageButton)findViewById(R.id.imgTakePicture)).setEnabled(false);
+                sendPhoto();
             }
         });
     }
+
+    private void sendPhoto() {
+        ((ImageButton)findViewById(R.id.imgTakePicture)).setEnabled(false);
+        ((FrameLayout)findViewById(R.id.camera_preview)).setEnabled(false);
+        ((TextView)findViewById(R.id.text_description)).setText("Please wait...");
+        ((Vibrator) getSystemService(Context.VIBRATOR_SERVICE)).vibrate(100);
+        mPreview.mCamera.takePicture(null, null, new Camera.PictureCallback() {
+            @Override
+            public void onPictureTaken(byte[] data, Camera camera) {
+                Bitmap orig = BitmapFactory.decodeByteArray(data,0,data.length);
+
+                Bitmap rescaled = Bitmap.createScaledBitmap(orig, 512, 512, true); // Width and Height in pixel e.g. 50
+
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                rescaled.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                data = stream.toByteArray();
+
+
+                File pictureFile = getOutputMediaFile();
+                if (pictureFile == null) {
+                    return;
+                }
+                try {
+                    FileOutputStream fos = new FileOutputStream(pictureFile);
+                    fos.write(data);
+                    fos.close();
+                    api.upload("http://13.93.105.66:9999/image", pictureFile, new OnResponseCallback() {
+                        @Override
+                        public void receiveText(final String text) {
+                            tts.speak(text);
+                            mPreview.mCamera.startPreview();
+
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    ((TextView)findViewById(R.id.text_description)).setText(text);
+                                    ((ImageButton)findViewById(R.id.imgTakePicture)).setEnabled(true);
+                                    ((FrameLayout)findViewById(R.id.camera_preview)).setEnabled(true);
+                                }
+                            });
+                        }
+                    });
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+
+            }
+        });
+    }
+
+    private void openCamera() {
+        if(mCamera != null) return;
+
+        try{
+            mCamera = Camera.open(0);//you can use open(int) to use different cameras
+        } catch (Exception e){
+            Log.d("ERROR", "Failed to get camera: " + e.getMessage());
+            return;
+        }
+    }
+
+    private void requestPermissions() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED
+        ||  ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
+        ||  ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+        ||  ContextCompat.checkSelfPermission(this, Manifest.permission.VIBRATE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.INTERNET,
+                            Manifest.permission.CAMERA,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                            Manifest.permission.VIBRATE},
+                    1000);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        for (int res : grantResults) {
+            if (res != PackageManager.PERMISSION_GRANTED) {
+                this.requestPermissions();
+                return;
+            }
+        }
+    }
+
 
     @Override
     public void onDestroy() {
@@ -88,89 +173,14 @@ public class MainActivity extends Activity  {
         super.onDestroy();
     }
 
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        //getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        /*
-        if (id == R.id.action_settings) {
-            return true;
-        }*/
-        return super.onOptionsItemSelected(item);
-    }
-
-    Camera.PictureCallback mPicture = new Camera.PictureCallback() {
-        @Override
-        public void onPictureTaken(byte[] data, Camera camera) {
-            Bitmap orig = BitmapFactory.decodeByteArray(data,0,data.length);
-
-            Bitmap rescaled = Bitmap.createScaledBitmap(orig, 512, 512, true); // Width and Height in pixel e.g. 50
-
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            rescaled.compress(Bitmap.CompressFormat.PNG, 100, stream);
-            data = stream.toByteArray();
-
-
-            File pictureFile = getOutputMediaFile();
-            if (pictureFile == null) {
-                return;
-            }
-            try {
-                FileOutputStream fos = new FileOutputStream(pictureFile);
-                fos.write(data);
-                fos.close();
-                api.upload("http://13.93.105.66:9999/image", pictureFile, new OnResponseCallback() {
-                    @Override
-                    public void receiveText(final String text) {
-                        new Handler(Looper.getMainLooper()).post(new Runnable () {
-                            @Override
-                            public void run () {
-                                ((TextView)findViewById(R.id.text_description)).setText(text);
-                            }
-                        });
-
-                        tts.speak(text);
-                        mCamera.startPreview();
-                        ((ImageButton)findViewById(R.id.imgTakePicture)).setEnabled(true);
-                    }
-                });
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-
-        }
-    };
-
     private static File getOutputMediaFile() {
-        File mediaStorageDir = new File(
-                Environment
-                        .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-                "SceneScribe");
+        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "SceneScribe");
         if (!mediaStorageDir.exists()) {
             if (!mediaStorageDir.mkdirs()) {
                 Log.d("SceneScribe", "failed to create directory");
                 return null;
             }
         }
-        // Create a media file name
-        File mediaFile;
-        mediaFile = new File(mediaStorageDir.getPath() + File.separator
-                + "IMG_Test.jpg");
-
-        return mediaFile;
+        return new File(mediaStorageDir.getPath() + File.separator + "IMG_Test.jpg");
     }
-
 }
