@@ -1,25 +1,26 @@
 package de.zkm.opencodes.hackathon.scenescribe;
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 public class MainActivity extends Activity  {
     public TTSService tts;
@@ -47,6 +48,11 @@ public class MainActivity extends Activity  {
             camera_view.addView(mCameraView);//add the SurfaceView to the layout
         }
 
+        //Set Description Test
+        //TODO: use this code snippet to show Description of the Scenary
+        TextView description = (TextView) findViewById(R.id.text_description);
+        description.setText("This is a description of the sceneray!");
+
         //btn to close the application
         ImageButton imgClose = (ImageButton)findViewById(R.id.imgClose);
         imgClose.setOnClickListener(new View.OnClickListener() {
@@ -61,6 +67,7 @@ public class MainActivity extends Activity  {
         imgTakePicture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                ((Vibrator) getSystemService(Context.VIBRATOR_SERVICE)).vibrate(100);
                 mCamera.takePicture(null, null, mPicture);
             }
         });
