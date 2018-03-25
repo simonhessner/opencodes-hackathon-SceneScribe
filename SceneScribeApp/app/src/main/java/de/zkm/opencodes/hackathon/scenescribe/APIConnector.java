@@ -41,6 +41,7 @@ public class APIConnector {
                     callback.receiveText(caption);
                 } catch (Exception e) {
                     e.printStackTrace();
+                    callback.receiveText("Internet problems, try again!");
                 }
             }
         });

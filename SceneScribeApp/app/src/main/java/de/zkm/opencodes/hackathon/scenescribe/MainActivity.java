@@ -29,7 +29,7 @@ interface OnResponseCallback {
 }
 
 // TODOs:
-// 1. Fix problem that every picture gets resized to square (look in paper which aspect ratio is expected)
+// 1. Fix permission problem on first start
 // 2. trigger by speech input
 
 public class MainActivity extends Activity  {
@@ -92,11 +92,22 @@ public class MainActivity extends Activity  {
             Bitmap orig = BitmapFactory.decodeByteArray(data,0,data.length);
 
             /*
-            Bitmap rescaled = Bitmap.createScaledBitmap(orig, 512, 512, true); // Width and Height in pixel e.g. 50
+            int origHeight = orig.getHeight();
+            int origWidth = orig.getWidth();
+            int maxWidth = 512;
+            int maxHeight = 512;
+            float ratio = Math.min((float)maxWidth / origWidth, (float)maxHeight / origHeight);
+            Bitmap rescaled = Bitmap.createScaledBitmap(orig, (int)(ratio * maxWidth), (int)(ratio * maxHeight), true); // Width and Height in pixel e.g. 50
+
+                System.out.println(rescaled.getWidth());
+                System.out.println(rescaled.getHeight());
+                System.out.println((int)(ratio * maxWidth));
+
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             rescaled.compress(Bitmap.CompressFormat.PNG, 100, stream);
             data = stream.toByteArray();
             */
+
 
             File pictureFile = getOutputMediaFile();
             if (pictureFile == null) {
