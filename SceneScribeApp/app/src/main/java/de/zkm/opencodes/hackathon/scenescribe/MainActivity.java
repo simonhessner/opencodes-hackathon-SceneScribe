@@ -18,7 +18,6 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -47,15 +46,8 @@ public class MainActivity extends Activity  {
 
         this.tts = new TTSService(this);
 
-        mPreview = new CameraPreview(this);
-        ((FrameLayout)findViewById(R.id.camera_preview)).addView(mPreview);
-        mPreview.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sendPhoto();
-            }
-        });
 
+        trySetupPreview();
 
         //btn to close the application
         ImageButton imgClose = (ImageButton)findViewById(R.id.imgClose);
@@ -74,6 +66,28 @@ public class MainActivity extends Activity  {
                 sendPhoto();
             }
         });
+    }
+
+    private void trySetupPreview() {
+        if (checkPermission(Manifest.permission.CAMERA)) {
+            if (mPreview == null) {
+                setupPreview();
+            } else {
+                // Try restart preview
+            }
+        }
+    }
+
+    private void setupPreview() {
+        mPreview = new CameraPreview(this);
+        ((FrameLayout)findViewById(R.id.camera_preview)).addView(mPreview);
+        mPreview.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendPhoto();
+            }
+        });
+
     }
 
     private void sendPhoto() {
@@ -153,17 +167,29 @@ public class MainActivity extends Activity  {
         }
     }
 
+    private boolean checkPermission(String permission) {
+        return ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private String[] requiredPermissions = {
+            Manifest.permission.INTERNET,
+            Manifest.permission.CAMERA,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.VIBRATE
+    };
+
+    private boolean isPermissionMissing() {
+        for (String permission : requiredPermissions) {
+            if (!checkPermission(permission)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private void requestPermissions() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED
-        ||  ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
-        ||  ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
-        ||  ContextCompat.checkSelfPermission(this, Manifest.permission.VIBRATE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.INTERNET,
-                            Manifest.permission.CAMERA,
-                            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                            Manifest.permission.VIBRATE},
-                    1000);
+        if (!isPermissionMissing()) {
+            ActivityCompat.requestPermissions(this, requiredPermissions, 1000);
         }
     }
 
@@ -175,6 +201,7 @@ public class MainActivity extends Activity  {
                 return;
             }
         }
+        trySetupPreview();
     }
 
 
