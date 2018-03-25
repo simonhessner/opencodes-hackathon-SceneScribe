@@ -1,9 +1,11 @@
 package de.zkm.opencodes.hackathon.scenescribe;
 
 import android.app.Activity;
+import android.content.Context;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -62,6 +64,7 @@ public class MainActivity extends Activity  {
         imgTakePicture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                ((Vibrator) getSystemService(Context.VIBRATOR_SERVICE)).vibrate(100);
                 mCamera.takePicture(null, null, mPicture);
             }
         });
