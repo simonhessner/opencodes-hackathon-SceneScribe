@@ -33,7 +33,13 @@ public class MainActivity extends Activity  {
 
         this.requestPermissions();
 
-        this.tts = new TTSService(this);
+        this.tts = new TTSService(this, new TTSService.OnInitCallBack() {
+            @Override
+            public void run() {
+                tts.speak("Scene scribe is ready!");
+                tts.speak("Tap anywhere to receive scene description.");
+            }
+        });
 
         trySetupPreview();
 
@@ -54,6 +60,7 @@ public class MainActivity extends Activity  {
                 sendPhoto();
             }
         });
+
     }
 
     private void trySetupPreview() {

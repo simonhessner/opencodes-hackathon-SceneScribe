@@ -13,9 +13,15 @@ import java.util.Locale;
 public class TTSService implements TextToSpeech.OnInitListener {
     private TextToSpeech tts;
     private boolean ready = false;
+    private OnInitCallBack onInitCallBack;
 
-    public TTSService(Activity activity) {
+    public TTSService(Activity activity, OnInitCallBack onInitCallBack) {
         this.tts = new TextToSpeech(activity.getBaseContext(), this);
+        this.onInitCallBack = onInitCallBack;
+    }
+
+    public interface OnInitCallBack {
+        void run();
     }
 
     @Override
@@ -29,6 +35,7 @@ public class TTSService implements TextToSpeech.OnInitListener {
                 Log.e("TTS", "This Language is not supported");
             } else {
                 this.ready = true;
+                onInitCallBack.run();
             }
 
         } else {
