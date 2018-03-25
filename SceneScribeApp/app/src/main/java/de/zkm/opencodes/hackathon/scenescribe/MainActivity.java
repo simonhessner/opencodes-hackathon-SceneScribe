@@ -14,7 +14,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -28,6 +27,11 @@ import java.io.IOException;
 interface OnResponseCallback {
     void receiveText(String text);
 }
+
+// TODOs:
+// 1. Request permissions on first app start
+// 2. Nicer voice
+// 3. Fix problem that every picture gets resized to square (look in paper which aspect ratio is expected)
 
 public class MainActivity extends Activity  {
     public TTSService tts;

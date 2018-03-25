@@ -36,7 +36,8 @@
         android:id="@+id/imgTakePicture"
         android:layout_gravity="bottom|center"
         android:background="@drawable/ic_photo_camera_black"
-        android:padding="40dp"/>
+        android:padding="40dp"
+        android:keepScreenOn="true" />
 
 </FrameLayout>
 
