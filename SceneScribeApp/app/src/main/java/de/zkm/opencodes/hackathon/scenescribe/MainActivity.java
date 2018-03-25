@@ -1,6 +1,8 @@
 package de.zkm.opencodes.hackathon.scenescribe;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Environment;
@@ -11,6 +13,7 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -29,6 +32,8 @@ public class MainActivity extends Activity  {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        this.tts = new TTSService(this);
 
         try{
             mCamera = Camera.open(0);//you can use open(int) to use different cameras
@@ -63,6 +68,7 @@ public class MainActivity extends Activity  {
 
     @Override
     public void onDestroy() {
+        tts.shutdown();
         super.onDestroy();
     }
 
@@ -90,6 +96,13 @@ public class MainActivity extends Activity  {
     Camera.PictureCallback mPicture = new Camera.PictureCallback() {
         @Override
         public void onPictureTaken(byte[] data, Camera camera) {
+            Bitmap orig = BitmapFactory.decodeByteArray(data,0,data.length);
+            Bitmap rescaled = Bitmap.createScaledBitmap(orig, 512, 512, true); // Width and Height in pixel e.g. 50
+
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            rescaled.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            data = stream.toByteArray();
+
             File pictureFile = getOutputMediaFile();
             if (pictureFile == null) {
                 return;
@@ -98,8 +111,7 @@ public class MainActivity extends Activity  {
                 FileOutputStream fos = new FileOutputStream(pictureFile);
                 fos.write(data);
                 fos.close();
-                System.out.println("test!!!!");
-                api.upload("http://13.93.105.66:9999/image", pictureFile);
+                api.upload("http://13.93.105.66:9999/image", pictureFile, tts);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
