@@ -24,13 +24,6 @@ public class TTSService implements TextToSpeech.OnInitListener {
         if (status == android.speech.tts.TextToSpeech.SUCCESS) {
 
             int result = tts.setLanguage(Locale.US);
-            /*
-            int i = 0;
-            for (Voice v : tts.getVoices()) {
-                System.out.println(i+++v.getName());
-            }
-            tts.setVoice((Voice)(tts.getVoices().toArray()[0]));
-            */
 
             if (result == android.speech.tts.TextToSpeech.LANG_MISSING_DATA || result == android.speech.tts.TextToSpeech.LANG_NOT_SUPPORTED) {
                 Log.e("TTS", "This Language is not supported");

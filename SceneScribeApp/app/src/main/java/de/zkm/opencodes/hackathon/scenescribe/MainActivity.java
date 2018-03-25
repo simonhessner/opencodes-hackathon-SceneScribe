@@ -4,11 +4,8 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Vibrator;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -17,10 +14,6 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 interface OnResponseCallback {
@@ -44,7 +37,6 @@ public class MainActivity extends Activity  {
         this.requestPermissions();
 
         this.tts = new TTSService(this);
-
 
         trySetupPreview();
 
@@ -102,37 +94,6 @@ public class MainActivity extends Activity  {
         mPreview.mCamera.takePicture(null, null, new Camera.PictureCallback() {
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
-            //Bitmap orig = BitmapFactory.decodeByteArray(data,0,data.length);
-
-            /*
-            int origHeight = orig.getHeight();
-            int origWidth = orig.getWidth();
-            int maxWidth = 512;
-            int maxHeight = 512;
-            float ratio = Math.min((float)maxWidth / origWidth, (float)maxHeight / origHeight);
-            Bitmap rescaled = Bitmap.createScaledBitmap(orig, (int)(ratio * maxWidth), (int)(ratio * maxHeight), true); // Width and Height in pixel e.g. 50
-
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            rescaled.compress(Bitmap.CompressFormat.PNG, 100, stream);
-            data = stream.toByteArray();
-            */
-
-            /*
-            System.out.println(orig.getWidth());
-            System.out.println(orig.getHeight());
-            */
-
-            /*
-            File pictureFile = getOutputMediaFile();
-            if (pictureFile == null) {
-                return;
-            }
-            */
-                /*
-                FileOutputStream fos = new FileOutputStream(pictureFile);
-                fos.write(data);
-                fos.close();
-                */
                 try {
                     api.upload("http://13.93.105.66:9999/image", data, new OnResponseCallback() {
                         @Override
@@ -211,17 +172,4 @@ public class MainActivity extends Activity  {
         tts.shutdown();
         super.onDestroy();
     }
-
-    /*
-    private static File getOutputMediaFile() {
-        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "SceneScribe");
-        if (!mediaStorageDir.exists()) {
-            if (!mediaStorageDir.mkdirs()) {
-                Log.d("SceneScribe", "failed to create directory");
-                return null;
-            }
-        }
-        return new File(mediaStorageDir.getPath() + File.separator + "IMG_Test.jpg");
-    }
-    */
 }
