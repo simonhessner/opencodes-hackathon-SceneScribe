@@ -26,10 +26,13 @@ def index():
 	filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
 	nparr = np.fromstring(image.stream.read(), np.uint8)
 	i = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-	cv2.imwrite(filepath + "pre.jpg", i)
-	resized_image = cv2.resize(i, (512, 512)) 
-	cv2.imwrite(filepath, resized_image)
-	return backend.caption_image(filepath)['caption']
+	maxWidth = maxHeight = 512
+	srcHeight, srcWidth, _ = i.shape
+	print("Height {}, Width {}".format(srcHeight, srcWidth))
+	ratio = min(maxWidth / srcWidth, maxHeight / srcHeight)
+	resized_image = cv2.resize(i, (int(ratio * srcWidth), int(ratio * srcHeight)))	 
+	resized_image_jpg = cv2.imencode('.jpg', resized_image)[1].tostring()
+	return backend.caption_image(resized_image_jpg)['caption']
 
 @app.route("/image", methods=["GET"])
 def default():

@@ -55,9 +55,20 @@ class Server:
     # available beam search parameters.
     self.generator = caption_generator.CaptionGenerator(model, self.vocab)
   
-  def caption_image(self, path_to_image):
+  def caption_image_file(self, path_to_image):
     with tf.gfile.GFile(path_to_image, "rb") as f:
       image = f.read()
+    captions = self.generator.beam_search(self.sess, image)
+    for i, caption in enumerate(captions):
+      # Ignore begin and end words.
+      sentence = [self.vocab.id_to_word(w) for w in caption.sentence[1:-1]]
+      sentence = " ".join(sentence)
+      return { 
+  	"caption": sentence,
+  	"prob": math.exp(caption.logprob)
+      }
+
+  def caption_image(self, image):
     captions = self.generator.beam_search(self.sess, image)
     for i, caption in enumerate(captions):
       # Ignore begin and end words.
