@@ -7,11 +7,14 @@ import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.Vibrator;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -21,6 +24,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+
+interface OnResponseCallback {
+    void receiveText(String text);
+}
 
 public class MainActivity extends Activity  {
     public TTSService tts;
@@ -46,12 +53,8 @@ public class MainActivity extends Activity  {
             mCameraView = new CameraPreview(this, mCamera);//create a SurfaceView to show camera data
             FrameLayout camera_view = (FrameLayout)findViewById(R.id.camera_preview);
             camera_view.addView(mCameraView);//add the SurfaceView to the layout
+            mCamera.startPreview();
         }
-
-        //Set Description Test
-        //TODO: use this code snippet to show Description of the Scenary
-        TextView description = (TextView) findViewById(R.id.text_description);
-        description.setText("This is a description of the sceneray!");
 
         //btn to close the application
         ImageButton imgClose = (ImageButton)findViewById(R.id.imgClose);
@@ -67,8 +70,10 @@ public class MainActivity extends Activity  {
         imgTakePicture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                ((TextView)findViewById(R.id.text_description)).setText("Please wait...");
                 ((Vibrator) getSystemService(Context.VIBRATOR_SERVICE)).vibrate(100);
                 mCamera.takePicture(null, null, mPicture);
+                ((ImageButton)findViewById(R.id.imgTakePicture)).setEnabled(false);
             }
         });
     }
@@ -104,11 +109,13 @@ public class MainActivity extends Activity  {
         @Override
         public void onPictureTaken(byte[] data, Camera camera) {
             Bitmap orig = BitmapFactory.decodeByteArray(data,0,data.length);
+
             Bitmap rescaled = Bitmap.createScaledBitmap(orig, 512, 512, true); // Width and Height in pixel e.g. 50
 
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             rescaled.compress(Bitmap.CompressFormat.PNG, 100, stream);
             data = stream.toByteArray();
+
 
             File pictureFile = getOutputMediaFile();
             if (pictureFile == null) {
@@ -118,12 +125,28 @@ public class MainActivity extends Activity  {
                 FileOutputStream fos = new FileOutputStream(pictureFile);
                 fos.write(data);
                 fos.close();
-                api.upload("http://13.93.105.66:9999/image", pictureFile, tts);
+                api.upload("http://13.93.105.66:9999/image", pictureFile, new OnResponseCallback() {
+                    @Override
+                    public void receiveText(final String text) {
+                        new Handler(Looper.getMainLooper()).post(new Runnable () {
+                            @Override
+                            public void run () {
+                                ((TextView)findViewById(R.id.text_description)).setText(text);
+                            }
+                        });
+
+                        tts.speak(text);
+                        mCamera.startPreview();
+                        ((ImageButton)findViewById(R.id.imgTakePicture)).setEnabled(true);
+                    }
+                });
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
+
         }
     };
 

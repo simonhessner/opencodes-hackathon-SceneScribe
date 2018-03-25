@@ -21,7 +21,7 @@ public class APIConnector {
 
     }
 
-    public void upload(final String url, final File file, final TTSService tts) throws IOException {
+    public void upload(final String url, final File file, final OnResponseCallback callback) throws IOException {
         Thread thread = new Thread(new Runnable() {
 
             @Override
@@ -38,7 +38,7 @@ public class APIConnector {
                     String caption = response.body().string().split("<S>")[0];
 
                     System.out.println("Response received:" + caption);
-                    tts.speak(caption);
+                    callback.receiveText(caption);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
