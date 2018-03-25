@@ -1,5 +1,7 @@
 package de.zkm.opencodes.hackathon.scenescribe;
 
+import android.graphics.Bitmap;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -21,7 +23,7 @@ public class APIConnector {
 
     }
 
-    public void upload(final String url, final File file, final OnResponseCallback callback) throws IOException {
+    public void upload(final String url, final byte[] data, final OnResponseCallback callback) throws IOException {
         Thread thread = new Thread(new Runnable() {
 
             @Override
@@ -29,8 +31,7 @@ public class APIConnector {
             try  {
                 RequestBody formBody = new MultipartBody.Builder()
                         .setType(MultipartBody.FORM)
-                        .addFormDataPart("image", file.getName(),
-                                RequestBody.create(MediaType.parse("text/plain"), file))
+                        .addFormDataPart("image", "input.jpg", RequestBody.create(MediaType.parse("text/plain"), data))
                         .build();
                 Request request = new Request.Builder().url(url).post(formBody).build();
                 Response response = client.newCall(request).execute();
@@ -47,6 +48,5 @@ public class APIConnector {
         });
 
         thread.start();
-
     }
 }

@@ -102,7 +102,7 @@ public class MainActivity extends Activity  {
         mPreview.mCamera.takePicture(null, null, new Camera.PictureCallback() {
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
-            Bitmap orig = BitmapFactory.decodeByteArray(data,0,data.length);
+            //Bitmap orig = BitmapFactory.decodeByteArray(data,0,data.length);
 
             /*
             int origHeight = orig.getHeight();
@@ -117,39 +117,42 @@ public class MainActivity extends Activity  {
             data = stream.toByteArray();
             */
 
+            /*
             System.out.println(orig.getWidth());
             System.out.println(orig.getHeight());
+            */
 
-
+            /*
             File pictureFile = getOutputMediaFile();
             if (pictureFile == null) {
                 return;
             }
-            try {
+            */
+                /*
                 FileOutputStream fos = new FileOutputStream(pictureFile);
                 fos.write(data);
                 fos.close();
-                api.upload("http://13.93.105.66:9999/image", pictureFile, new OnResponseCallback() {
-                    @Override
-                    public void receiveText(final String text) {
-                        tts.speak(text);
-                        mPreview.mCamera.startPreview();
+                */
+                try {
+                    api.upload("http://13.93.105.66:9999/image", data, new OnResponseCallback() {
+                        @Override
+                        public void receiveText(final String text) {
+                            tts.speak(text);
+                            mPreview.mCamera.startPreview();
 
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                ((TextView)findViewById(R.id.text_description)).setText(text);
-                                ((ImageButton)findViewById(R.id.imgTakePicture)).setEnabled(true);
-                                ((FrameLayout)findViewById(R.id.camera_preview)).setEnabled(true);
-                            }
-                        });
-                    }
-                });
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    ((TextView)findViewById(R.id.text_description)).setText(text);
+                                    ((ImageButton)findViewById(R.id.imgTakePicture)).setEnabled(true);
+                                    ((FrameLayout)findViewById(R.id.camera_preview)).setEnabled(true);
+                                }
+                            });
+                        }
+                    });
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
@@ -209,6 +212,7 @@ public class MainActivity extends Activity  {
         super.onDestroy();
     }
 
+    /*
     private static File getOutputMediaFile() {
         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "SceneScribe");
         if (!mediaStorageDir.exists()) {
@@ -219,4 +223,5 @@ public class MainActivity extends Activity  {
         }
         return new File(mediaStorageDir.getPath() + File.separator + "IMG_Test.jpg");
     }
+    */
 }
