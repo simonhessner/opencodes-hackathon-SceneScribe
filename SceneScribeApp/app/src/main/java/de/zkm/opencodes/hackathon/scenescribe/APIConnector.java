@@ -26,23 +26,23 @@ public class APIConnector {
 
             @Override
             public void run() {
-                try  {
-                    RequestBody formBody = new MultipartBody.Builder()
-                            .setType(MultipartBody.FORM)
-                            .addFormDataPart("image", file.getName(),
-                                    RequestBody.create(MediaType.parse("text/plain"), file))
-                            .build();
-                    Request request = new Request.Builder().url(url).post(formBody).build();
-                    Response response = client.newCall(request).execute();
+            try  {
+                RequestBody formBody = new MultipartBody.Builder()
+                        .setType(MultipartBody.FORM)
+                        .addFormDataPart("image", file.getName(),
+                                RequestBody.create(MediaType.parse("text/plain"), file))
+                        .build();
+                Request request = new Request.Builder().url(url).post(formBody).build();
+                Response response = client.newCall(request).execute();
 
-                    String caption = response.body().string().split("<S>")[0];
+                String caption = response.body().string().split("<S>")[0];
 
-                    System.out.println("Response received:" + caption);
-                    callback.receiveText(caption);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    callback.receiveText("Internet problems, try again!");
-                }
+                System.out.println("Response received:" + caption);
+                callback.receiveText(caption);
+            } catch (Exception e) {
+                e.printStackTrace();
+                callback.receiveText("Internet problems, try again!");
+            }
             }
         });
 

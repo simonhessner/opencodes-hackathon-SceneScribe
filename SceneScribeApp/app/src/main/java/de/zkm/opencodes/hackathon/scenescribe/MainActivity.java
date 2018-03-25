@@ -28,8 +28,7 @@ interface OnResponseCallback {
 }
 
 // TODOs:
-// 1. Fix permission problem on first start
-// 2. trigger by speech input
+// 1. Resize image direclty in app
 
 public class MainActivity extends Activity  {
     public TTSService tts;
@@ -113,14 +112,13 @@ public class MainActivity extends Activity  {
             float ratio = Math.min((float)maxWidth / origWidth, (float)maxHeight / origHeight);
             Bitmap rescaled = Bitmap.createScaledBitmap(orig, (int)(ratio * maxWidth), (int)(ratio * maxHeight), true); // Width and Height in pixel e.g. 50
 
-                System.out.println(rescaled.getWidth());
-                System.out.println(rescaled.getHeight());
-                System.out.println((int)(ratio * maxWidth));
-
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             rescaled.compress(Bitmap.CompressFormat.PNG, 100, stream);
             data = stream.toByteArray();
             */
+
+            System.out.println(orig.getWidth());
+            System.out.println(orig.getHeight());
 
 
             File pictureFile = getOutputMediaFile();
