@@ -65,5 +65,4 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
         mCamera.setParameters(parameters);
         mCamera.startPreview();
     }
-
 }

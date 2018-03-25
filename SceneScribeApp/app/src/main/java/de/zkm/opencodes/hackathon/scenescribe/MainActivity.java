@@ -77,6 +77,11 @@ public class MainActivity extends Activity  {
     }
 
     private void sendPhoto() {
+        // Little hack because disabling frame onclick event does not seem to work => double click causes crash
+        if (!((ImageButton)findViewById(R.id.imgTakePicture)).isEnabled()) {
+            return;
+        }
+
         ((ImageButton)findViewById(R.id.imgTakePicture)).setEnabled(false);
         ((FrameLayout)findViewById(R.id.camera_preview)).setEnabled(false);
         ((TextView)findViewById(R.id.text_description)).setText("Please wait...");
