@@ -99,7 +99,7 @@ public class MainActivity extends Activity  {
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
                 try {
-                    api.upload("http://13.93.105.66:9999/image", data, new OnResponseCallback() {
+                    api.upload("http://52.166.232.130:9999/image", data, new OnResponseCallback() {
                         @Override
                         public void receiveText(final String text) {
                             tts.speak(text);
